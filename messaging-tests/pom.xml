@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.vinamilk.automation</groupId>
+        <artifactId>vinamilk-automation-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>messaging-tests</artifactId>
+    <packaging>jar</packaging>
+    <name>Vinamilk Automation :: Messaging Tests</name>
+    <description>
+        Kafka producer/consumer test helpers and event-driven assertions -
+        verifies that a microservice actually publishes the event a downstream
+        consumer relies on, which API-only or UI-only testing cannot see.
+    </description>
+
+    <properties>
+        <suiteXmlFile>src/test/resources/testng-messaging.xml</suiteXmlFile>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vinamilk.automation</groupId>
+            <artifactId>automation-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+        </dependency>
+        <dependency>
+            <!-- Reused as a client library to trigger the order-created flow being asserted here -->
+            <groupId>com.vinamilk.automation</groupId>
+            <artifactId>api-tests</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-testng</artifactId>
+        </dependency>
+    </dependencies>
+</project>

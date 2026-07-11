@@ -1,0 +1,116 @@
+# Harness CI/CD pipeline (alternative to Jenkinsfile at the repo root).
+# Mirrors the same stages so the suite can run on either orchestrator without
+# duplicating test logic - all of it stays in the Maven reactor.
+pipeline:
+  name: vinamilk-automation-suite
+  identifier: vinamilk_automation_suite
+  projectIdentifier: qa_automation
+  orgIdentifier: vinamilk
+
+  variables:
+    - name: test_env
+      type: String
+      default: dev
+    - name: run_ui_tests
+      type: String
+      default: "true"
+    - name: run_api_tests
+      type: String
+      default: "true"
+    - name: run_messaging_tests
+      type: String
+      default: "false"
+
+  stages:
+    - stage:
+        name: Build and Static Analysis
+        identifier: build
+        type: CI
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Install and Compile
+                  identifier: install
+                  type: Run
+                  spec:
+                    command: mvn -B -ntp clean install -DskipTests
+              - step:
+                  name: Checkstyle
+                  identifier: checkstyle
+                  type: Run
+                  spec:
+                    command: mvn -B -ntp checkstyle:check
+
+    - stage:
+        name: API Tests
+        identifier: api_tests
+        type: CI
+        when:
+          condition: <+pipeline.variables.run_api_tests> == "true"
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: REST Assured Microservices Suite
+                  identifier: api_suite
+                  type: Run
+                  spec:
+                    command: >-
+                      mvn -B -ntp -pl api-tests -am test
+                      -Denv=<+pipeline.variables.test_env>
+                      -DsuiteXmlFile=src/test/resources/testng-api.xml
+
+    - stage:
+        name: UI Tests
+        identifier: ui_tests
+        type: CI
+        when:
+          condition: <+pipeline.variables.run_ui_tests> == "true"
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Selenium Grid Regression Suite
+                  identifier: ui_suite
+                  type: Run
+                  spec:
+                    command: >-
+                      mvn -B -ntp -pl ui-tests -am test
+                      -Denv=<+pipeline.variables.test_env>
+                      -Dbrowser.headless=true
+                      -Dselenium.grid.enabled=true
+                      -DsuiteXmlFile=src/test/resources/testng-ui.xml
+
+    - stage:
+        name: Messaging Tests
+        identifier: messaging_tests
+        type: CI
+        when:
+          condition: <+pipeline.variables.run_messaging_tests> == "true"
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Kafka Event-Driven Suite
+                  identifier: messaging_suite
+                  type: Run
+                  spec:
+                    command: >-
+                      mvn -B -ntp -pl messaging-tests -am test
+                      -Denv=<+pipeline.variables.test_env>
+                      -DsuiteXmlFile=src/test/resources/testng-messaging.xml
+
+    - stage:
+        name: Publish Reports
+        identifier: publish_reports
+        type: CI
+        spec:
+          execution:
+            steps:
+              - step:
+                  name: Allure Report
+                  identifier: allure_report
+                  type: Run
+                  spec:
+                    command: mvn -B -ntp io.qameta.allure:allure-maven:report

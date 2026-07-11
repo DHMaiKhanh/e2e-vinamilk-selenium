@@ -1,0 +1,14 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Vinamilk UI Regression Suite" parallel="classes" thread-count="3">
+    <listeners>
+        <listener class-name="com.vinamilk.automation.core.listeners.RetryTransformer"/>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+    <test name="UI Smoke and Regression">
+        <classes>
+            <class name="com.vinamilk.automation.ui.tests.LoginTest"/>
+            <class name="com.vinamilk.automation.ui.tests.ProductSearchTest"/>
+            <class name="com.vinamilk.automation.ui.tests.AddToCartTest"/>
+        </classes>
+    </test>
+</suite>

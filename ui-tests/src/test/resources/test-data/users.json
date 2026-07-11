@@ -1,0 +1,12 @@
+[
+  {
+    "role": "registered_customer",
+    "email": "qa.automation@vinamilk.com.vn",
+    "password": "P@ssw0rd123"
+  },
+  {
+    "role": "invalid_user",
+    "email": "invalid.user@vinamilk.com.vn",
+    "password": "wrong-password"
+  }
+]

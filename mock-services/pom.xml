@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.vinamilk.automation</groupId>
+        <artifactId>vinamilk-automation-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>mock-services</artifactId>
+    <packaging>jar</packaging>
+    <name>Vinamilk Automation :: Mock Services</name>
+    <description>
+        Embedded WireMock stubs for isolating a microservice under test from its
+        upstream dependencies - used when a live dependency is unstable,
+        unavailable in the test environment, or when a specific fault/latency
+        scenario needs to be reproduced deterministically.
+    </description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vinamilk.automation</groupId>
+            <artifactId>automation-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+        </dependency>
+    </dependencies>
+</project>

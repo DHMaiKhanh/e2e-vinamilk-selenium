@@ -1,0 +1,24 @@
+target/
+*.class
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+.m2/repository/
+
+# Test outputs
+allure-results/
+allure-report/
+test-output/
+**/target/screenshots/
+*.log
+
+# Env / secrets
+.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db

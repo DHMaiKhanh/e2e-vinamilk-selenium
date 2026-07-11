@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Vinamilk Microservices API Suite" parallel="methods" thread-count="5">
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
+    </listeners>
+    <test name="API Contract and Integration Tests">
+        <classes>
+            <class name="com.vinamilk.automation.api.tests.user.UserServiceTests"/>
+            <class name="com.vinamilk.automation.api.tests.product.ProductServiceTests"/>
+            <class name="com.vinamilk.automation.api.tests.order.OrderServiceTests"/>
+        </classes>
+    </test>
+</suite>
