@@ -2,6 +2,8 @@ package com.vinamilk.automation.ui.pages;
 
 import com.vinamilk.automation.core.utils.WaitUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -14,7 +16,14 @@ public abstract class BasePage {
     }
 
     protected void click(By locator) {
-        WaitUtils.waitForClickable(driver, locator).click();
+        WebElement element = WaitUtils.waitForClickable(driver, locator);
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].scrollIntoView({block: 'center', inline: 'center'});", element);
+        try {
+            element.click();
+        } catch (ElementClickInterceptedException e) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+        }
     }
 
     protected void type(By locator, String text) {
@@ -33,5 +42,13 @@ public abstract class BasePage {
         } catch (org.openqa.selenium.TimeoutException e) {
             return false;
         }
+    }
+
+    public String currentUrl() {
+        return driver.getCurrentUrl();
+    }
+
+    public String pageTitle() {
+        return driver.getTitle();
     }
 }
