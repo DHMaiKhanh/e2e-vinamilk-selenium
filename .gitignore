@@ -22,3 +22,9 @@ test-output/
 # OS
 .DS_Store
 Thumbs.db
+
+# Playwright MCP session artifacts
+.playwright-mcp/
+
+# Dashboard app
+dashboard/node_modules/
