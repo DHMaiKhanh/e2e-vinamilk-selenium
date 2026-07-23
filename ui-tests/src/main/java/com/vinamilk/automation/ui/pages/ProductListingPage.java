@@ -9,8 +9,17 @@ import org.openqa.selenium.WebElement;
 
 public class ProductListingPage extends BasePage {
 
-    private static final By PRODUCT_CARDS = By.cssSelector(".product-card");
-    private static final String FIRST_CARD_XPATH = "(//*[contains(@class, 'product-card')])[1]";
+    // NOTE: ".product-card" never existed on the live DOM. The real product-card root (verified
+    // live) is a div carrying these Tailwind utility classes together, one per product in the grid.
+    private static final By PRODUCT_CARDS = By.cssSelector(
+            "div.relative.inline-block.h-full.w-full.transition-all");
+    private static final String FIRST_CARD_XPATH =
+            "(//div[contains(concat(' ', normalize-space(@class), ' '), ' relative ')"
+                    + " and contains(concat(' ', normalize-space(@class), ' '), ' inline-block ')"
+                    + " and contains(concat(' ', normalize-space(@class), ' '), ' h-full ')"
+                    + " and contains(concat(' ', normalize-space(@class), ' '), ' w-full ')"
+                    + " and contains(concat(' ', normalize-space(@class), ' '), ' transition-all ')"
+                    + " and .//h2])[1]";
 
     private static final By DELIVERY_AREA_BANNER = By.xpath(
             "//*[contains(text(), 'Chọn khu vực giao hàng')]");
@@ -45,24 +54,32 @@ public class ProductListingPage extends BasePage {
                     + " or contains(text(), 'Superior Taste')]");
     private static final By FIRST_PRODUCT_NOTE = By.xpath(FIRST_CARD_XPATH + "//*[contains(text(), 'LƯU Ý')]");
 
+    // The open/close options buttons are icon-only: they carry no visible text, only an
+    // aria-label, so text-based contains(.) never matched them.
     private static final By FIRST_PRODUCT_OPEN_OPTIONS_BUTTON = By.xpath(
-            FIRST_CARD_XPATH + "//button[contains(., 'Open product options')]");
+            FIRST_CARD_XPATH + "//button[@aria-label='Open product options']");
     private static final By FIRST_PRODUCT_CLOSE_OPTIONS_BUTTON = By.xpath(
-            FIRST_CARD_XPATH + "//button[contains(., 'Close product options')]");
+            FIRST_CARD_XPATH + "//button[@aria-label='Close product options']");
+    // The quantity control is a plain <input type="number">, not a role="spinbutton" element.
+    // It sits inside a "w-auto" wrapper div that is itself a sibling of the +/- buttons.
     private static final By FIRST_PRODUCT_QUANTITY_DECREASE_BUTTON = By.xpath(
-            FIRST_CARD_XPATH + "//*[@role='spinbutton']/preceding-sibling::button[1]");
+            FIRST_CARD_XPATH + "//input[@type='number']/ancestor::div[contains(@class, 'w-auto')][1]"
+                    + "/preceding-sibling::button[1]");
     private static final By FIRST_PRODUCT_QUANTITY_INCREASE_BUTTON = By.xpath(
-            FIRST_CARD_XPATH + "//*[@role='spinbutton']/following-sibling::button[1]");
+            FIRST_CARD_XPATH + "//input[@type='number']/ancestor::div[contains(@class, 'w-auto')][1]"
+                    + "/following-sibling::button[1]");
     private static final By FIRST_PRODUCT_ADD_TO_CART_BUTTON = By.xpath(
             FIRST_CARD_XPATH + "//button[contains(., 'Thêm vào giỏ')]");
 
-    private static final By PAGINATION_NAV = By.xpath("//nav[contains(@aria-label, 'Pagination')]");
+    // The pagination control is a <ul role="navigation" aria-label="Pagination">, not a <nav>
+    // element, and Previous/Next are <a role="button"> links, not <button> elements.
+    private static final By PAGINATION_NAV = By.xpath("//*[contains(@aria-label, 'Pagination')]");
     private static final By PREVIOUS_PAGE_BUTTON = By.xpath(
-            "//nav[contains(@aria-label, 'Pagination')]//button[contains(@aria-label, 'Previous page')]"
-                    + " | //nav[contains(@aria-label, 'Pagination')]//a[contains(@aria-label, 'Previous page')]");
+            "//*[contains(@aria-label, 'Pagination')]//a[contains(@aria-label, 'Previous page')]"
+                    + " | //*[contains(@aria-label, 'Pagination')]//button[contains(@aria-label, 'Previous page')]");
     private static final By NEXT_PAGE_BUTTON = By.xpath(
-            "//nav[contains(@aria-label, 'Pagination')]//button[contains(@aria-label, 'Next page')]"
-                    + " | //nav[contains(@aria-label, 'Pagination')]//a[contains(@aria-label, 'Next page')]");
+            "//*[contains(@aria-label, 'Pagination')]//a[contains(@aria-label, 'Next page')]"
+                    + " | //*[contains(@aria-label, 'Pagination')]//button[contains(@aria-label, 'Next page')]");
 
     private static final Pattern DIGITS_PATTERN = Pattern.compile("\\d+");
 
@@ -79,7 +96,10 @@ public class ProductListingPage extends BasePage {
         if (cards.isEmpty()) {
             throw new IllegalStateException("No products found in listing");
         }
-        cards.get(0).click();
+        // The card container itself is not clickable/navigable (verified live: it is a plain
+        // div, not a link or button) - the actual navigation happens via the nested
+        // a[href*='/products/'] link, so click that instead of the card wrapper.
+        cards.get(0).findElement(By.cssSelector("a[href*='/products/']")).click();
         return new ProductDetailPage(driver);
     }
 
@@ -216,12 +236,14 @@ public class ProductListingPage extends BasePage {
     }
 
     public boolean isPreviousPageButtonDisabled() {
+        // Previous/Next are <a role="button"> links, not form controls, so isEnabled() is always
+        // true for them. The real disabled state is exposed via aria-disabled.
         WebElement previousButton = driver.findElement(PREVIOUS_PAGE_BUTTON);
-        return !previousButton.isEnabled();
+        return "true".equals(previousButton.getAttribute("aria-disabled"));
     }
 
     public void goToPage(int pageNumber) {
-        click(By.xpath("//nav[contains(@aria-label, 'Pagination')]//a[contains(@aria-label, 'Page " + pageNumber
+        click(By.xpath("//*[contains(@aria-label, 'Pagination')]//a[contains(@aria-label, 'Page " + pageNumber
                 + "')]"));
     }
 
@@ -235,7 +257,7 @@ public class ProductListingPage extends BasePage {
 
     public int lastPageNumber() {
         List<WebElement> pageLinks = driver.findElements(By.xpath(
-                "//nav[contains(@aria-label, 'Pagination')]//a[contains(@aria-label, 'Page ')]"));
+                "//*[contains(@aria-label, 'Pagination')]//a[contains(@aria-label, 'Page ')]"));
         int lastPage = 0;
         for (WebElement link : pageLinks) {
             Matcher matcher = DIGITS_PATTERN.matcher(link.getAttribute("aria-label"));

@@ -60,7 +60,10 @@ public final class DriverFactory {
             case CHROME:
             default:
                 ChromeOptions chromeOptions = new ChromeOptions();
-                chromeOptions.addArguments("--remote-allow-origins=*", "--window-size=1920,1080");
+                chromeOptions.addArguments("--remote-allow-origins=*", "--window-size=1920,1080",
+                        "--disable-blink-features=AutomationControlled");
+                chromeOptions.setExperimentalOption("excludeSwitches", new String[] {"enable-automation"});
+                chromeOptions.setExperimentalOption("useAutomationExtension", false);
                 if (headless) {
                     chromeOptions.addArguments("--headless=new");
                 }

@@ -8,8 +8,20 @@ import org.openqa.selenium.WebElement;
 
 public class HomePage extends BasePage {
 
-    private static final By ACCOUNT_ICON = By.cssSelector("nav:not([aria-label='Main']) button:nth-of-type(1)");
-    private static final By SEARCH_ICON = By.cssSelector("nav:not([aria-label='Main']) button:nth-of-type(2)");
+    // NOTE: `nav:not([aria-label='Main'])` matched the breadcrumb nav, the pagination nav and
+    // the mega-menu list items too (any of them are also "not aria-label=Main"), so
+    // `button:nth-of-type(2)` could resolve to an unrelated/disabled button on listing or
+    // detail pages, causing "not clickable" timeouts. The header icon buttons have no
+    // aria-label/id of their own, but #cartBadge (verified live) is stable and always the
+    // last of the three icon buttons, so anchor off it instead of the ambiguous nav selector.
+    // Verified live: #cartBadge is wrapped in its own `div.relative` (for the badge count
+    // overlay), so it is NOT a direct sibling of the account/search buttons - its *parent*
+    // div is the sibling. Anchoring preceding-sibling straight off the button (skipping the
+    // wrapper div) matches nothing, which is what caused the 5s clickable-wait timeout.
+    private static final By ACCOUNT_ICON = By.xpath(
+            "//button[@id='cartBadge']/parent::div/preceding-sibling::button[2]");
+    private static final By SEARCH_ICON = By.xpath(
+            "//button[@id='cartBadge']/parent::div/preceding-sibling::button[1]");
     private static final By CART_ICON = By.cssSelector("#cartBadge");
     private static final By CART_BADGE_COUNT = By.cssSelector("#cartBadge span");
 
@@ -62,7 +74,7 @@ public class HomePage extends BasePage {
     private static final By CART_EMPTY_MESSAGE = By.xpath("//*[contains(text(), 'Chưa có sản phẩm trong giỏ hàng')]");
     private static final By CART_VIEW_PRODUCTS_CTA = By.xpath("//a[contains(., 'Xem sản phẩm giá tốt')]");
     private static final By CART_CLOSE_BUTTON = By.xpath(
-            "//div[@role='dialog']//button[not(ancestor::*[contains(@class, 'hidden')])][1]");
+            "//div[@role='dialog']//div[contains(@class, 'justify-between') and contains(., 'Giỏ hàng')]//button");
 
     private static final By FEATURED_NEW_PRODUCT_BANNER = By.xpath("//a[contains(@href, '/products/') and .//*[contains(text(), 'Mới')]]");
 
