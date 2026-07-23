@@ -8,10 +8,22 @@ import org.openqa.selenium.WebElement;
 
 public class HomePage extends BasePage {
 
-    private static final By ACCOUNT_ICON = By.cssSelector("header nav button:nth-of-type(1)");
-    private static final By SEARCH_ICON = By.cssSelector("header nav button:nth-of-type(2)");
-    private static final By CART_ICON = By.cssSelector("header nav button[aria-label*='cart'], header nav >* button:last-of-type");
-    private static final By CART_BADGE_COUNT = By.cssSelector("header nav button:last-of-type");
+    // NOTE: `nav:not([aria-label='Main'])` matched the breadcrumb nav, the pagination nav and
+    // the mega-menu list items too (any of them are also "not aria-label=Main"), so
+    // `button:nth-of-type(2)` could resolve to an unrelated/disabled button on listing or
+    // detail pages, causing "not clickable" timeouts. The header icon buttons have no
+    // aria-label/id of their own, but #cartBadge (verified live) is stable and always the
+    // last of the three icon buttons, so anchor off it instead of the ambiguous nav selector.
+    // Verified live: #cartBadge is wrapped in its own `div.relative` (for the badge count
+    // overlay), so it is NOT a direct sibling of the account/search buttons - its *parent*
+    // div is the sibling. Anchoring preceding-sibling straight off the button (skipping the
+    // wrapper div) matches nothing, which is what caused the 5s clickable-wait timeout.
+    private static final By ACCOUNT_ICON = By.xpath(
+            "//button[@id='cartBadge']/parent::div/preceding-sibling::button[2]");
+    private static final By SEARCH_ICON = By.xpath(
+            "//button[@id='cartBadge']/parent::div/preceding-sibling::button[1]");
+    private static final By CART_ICON = By.cssSelector("#cartBadge");
+    private static final By CART_BADGE_COUNT = By.cssSelector("#cartBadge span");
 
     private static final By SEARCH_DIALOG = By.cssSelector("[role='dialog']");
     private static final By SEARCH_INPUT = By.xpath("//div[@role='dialog']//input[@type='text' or @type='search']");
@@ -33,15 +45,19 @@ public class HomePage extends BasePage {
     private static final By FOOTER = By.cssSelector("footer, [class*=footer]");
     private static final By FOOTER_SOCIAL_LINKS = By.cssSelector("footer a[href*='facebook.com'], footer a[href*='instagram.com'], footer a[href*='tiktok.com'], footer a[href*='youtube.com'], footer a[href*='linkedin.com']");
     private static final By FOOTER_LANGUAGE_COMBOBOX = By.cssSelector("footer select, footer [role='combobox']");
-    private static final By FOOTER_TERMS_LINK = By.cssSelector("footer a[href*='/support/terms-of-use']");
+    private static final By FOOTER_TERMS_LINK = By.xpath(
+            "//footer//a[contains(@href, '/support/terms-of-use') and contains(., 'Điều khoản')]");
     private static final By FOOTER_POLICY_LINKS = By.cssSelector(
             "footer a[href*='/support/terms-of-use'], footer a[href*='/support/privacy'], "
                     + "footer a[href*='quy-che'], footer a[href*='khieu-nai']");
 
-    private static final By TOP_BAR_SHIPPING_BANNER = By.xpath("//header//*[contains(text(), 'Miễn phí vận chuyển')]");
-    private static final By TOP_BAR_LINK_ALWAYS_VINAMILK = By.cssSelector("header a[href*='/about-us']");
-    private static final By TOP_BAR_LINK_ALWAYS_INNOVATIVE = By.cssSelector("header a[href*='/technology']");
-    private static final By TOP_BAR_LINK_STORE = By.cssSelector("header a[href*='/store-list']");
+    private static final By TOP_BAR_SHIPPING_BANNER = By.xpath("//*[contains(text(), 'Miễn phí vận chuyển')]");
+    private static final By TOP_BAR_LINK_ALWAYS_VINAMILK = By.xpath(
+            "//div[.//*[contains(text(), 'Miễn phí vận chuyển')]]//a[@href='/about-us']");
+    private static final By TOP_BAR_LINK_ALWAYS_INNOVATIVE = By.xpath(
+            "//div[.//*[contains(text(), 'Miễn phí vận chuyển')]]//a[@href='/technology']");
+    private static final By TOP_BAR_LINK_STORE = By.xpath(
+            "//div[.//*[contains(text(), 'Miễn phí vận chuyển')]]//a[@href='/store-list']");
 
     private static final By NAV_LINK_BLOGS = By.cssSelector("nav[aria-label='Main'] a[href*='/blogs']");
     private static final By NAV_LINK_REWARDS = By.cssSelector("nav[aria-label='Main'] a[href*='/vinamilk-rewards']");
@@ -49,7 +65,7 @@ public class HomePage extends BasePage {
     private static final By LOGO_LINK = By.cssSelector("header a[href='/']");
 
     private static final By PRODUCT_MENU_BUTTON = By.xpath("//header//button[contains(., 'Sản phẩm')]");
-    private static final By MEGA_MENU_PANEL = By.cssSelector("[class*='mega-menu'], [class*='megamenu']");
+    private static final By MEGA_MENU_PANEL = By.cssSelector("div[class*='radix-navigation-menu-viewport-height']");
     private static final By MEGA_MENU_CATEGORY_LINKS = By.cssSelector("a[href*='/collections/']");
     private static final By MEGA_MENU_BRAND_LINKS = By.cssSelector("a[href*='src=ALL_vendors']");
     private static final By MEGA_MENU_QUICK_LINK_BEST_SELLING = By.cssSelector("a[href*='/best-selling']");
@@ -57,16 +73,18 @@ public class HomePage extends BasePage {
 
     private static final By CART_EMPTY_MESSAGE = By.xpath("//*[contains(text(), 'Chưa có sản phẩm trong giỏ hàng')]");
     private static final By CART_VIEW_PRODUCTS_CTA = By.xpath("//a[contains(., 'Xem sản phẩm giá tốt')]");
-    private static final By CART_CLOSE_BUTTON = By.xpath("//div[@role='dialog']//button[contains(@aria-label, 'lose') or contains(@aria-label, 'óng')]");
+    private static final By CART_CLOSE_BUTTON = By.xpath(
+            "//div[@role='dialog']//div[contains(@class, 'justify-between') and contains(., 'Giỏ hàng')]//button");
 
     private static final By FEATURED_NEW_PRODUCT_BANNER = By.xpath("//a[contains(@href, '/products/') and .//*[contains(text(), 'Mới')]]");
 
     private static final By TECHNOLOGY_SECTION_CTA = By.xpath(
-            "//section[.//*[contains(text(), 'Cầu tiến là bí quyết')]]//a[contains(., 'Tìm hiểu thêm')]");
+            "//a[@href='/technology' and contains(., 'Tìm hiểu thêm')]");
     private static final By SUSTAINABILITY_SECTION_CTA = By.xpath(
-            "//section[.//*[contains(text(), 'Để tâm hành động')]]//a[contains(., 'Tìm hiểu thêm')]");
+            "//a[@href='/sustainability' and contains(., 'Tìm hiểu thêm')]");
     private static final By SUSTAINABILITY_ARTICLES = By.xpath(
-            "//section[.//*[contains(text(), 'Để tâm hành động')]]//article");
+            "//div[contains(@class, 'grid') and contains(@class, 'md:grid-cols-3') "
+                    + "and .//*[contains(text(), 'Mảnh ghép mới')]]/div");
     private static final By RECRUITMENT_APPLY_CTA = By.xpath("//a[contains(@href, '/recruitment/career-opportunities')]");
     private static final By RECRUITMENT_LIFE_LINK = By.cssSelector("a[href*='facebook.com/LifeAtVinamilk']");
 

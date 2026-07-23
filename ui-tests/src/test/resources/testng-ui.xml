@@ -6,6 +6,8 @@
     </listeners>
     <test name="UI Smoke and Regression">
         <classes>
+            <class name="com.vinamilk.automation.ui.tests.HomePageTest"/>
+            <class name="com.vinamilk.automation.ui.tests.ProductListingPageTest"/>
             <class name="com.vinamilk.automation.ui.tests.LoginTest"/>
             <class name="com.vinamilk.automation.ui.tests.ProductSearchTest"/>
             <class name="com.vinamilk.automation.ui.tests.AddToCartTest"/>
